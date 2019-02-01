@@ -8,7 +8,7 @@ import org.apache.ibatis.jdbc.SQL;
  * @author liang
  * @date 2019/1/30 - 18:31
  */
-public class VideoDaoDynaSQLCreater {
+public class VideoMapperDynaSQLCreater {
     /**
      * 更新videoSQL
      * @param video

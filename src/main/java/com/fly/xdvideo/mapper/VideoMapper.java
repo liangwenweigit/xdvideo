@@ -1,7 +1,7 @@
 package com.fly.xdvideo.mapper;
 
 import com.fly.xdvideo.domain.Video;
-import com.fly.xdvideo.provider.VideoDaoDynaSQLCreater;
+import com.fly.xdvideo.provider.VideoMapperDynaSQLCreater;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -18,13 +18,13 @@ public interface VideoMapper {
     List<Video> selectAllVideo();
 
     @Select("select * from video where id = #{id}")
-    Video findVideoById(Integer id);
+    Video findVideoById(@Param("id") Integer id);
 
-    @UpdateProvider(type = VideoDaoDynaSQLCreater.class,method = "updateVideo")
+    @UpdateProvider(type = VideoMapperDynaSQLCreater.class,method = "updateVideo")
     void updateVideo(Video Video);
 
     @Delete("DELETE FROM video WHERE id =#{id}")
-    void deleteVideo(Integer id);
+    void deleteVideo(@Param("id") Integer id);
 
     @Insert("INSERT INTO `video` ( `title`, `summary`, " +
             "`cover_img`, `view_num`, `price`, `create_time`," +
