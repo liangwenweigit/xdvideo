@@ -29,6 +29,9 @@ public class VideoOrder implements Serializable{
   private String videoImg;
   private Integer userId;
   private String ip;
+  /**
+   * 0表示存在  1表示已经逻辑删除
+   */
   private Integer del;
 
   public VideoOrder() {

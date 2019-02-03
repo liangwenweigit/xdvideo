@@ -1,6 +1,7 @@
 package com.fly.xdvideo.mapper;
 
 import com.fly.xdvideo.domain.User;
+import com.fly.xdvideo.provider.UserMapperDynaSQLCreater;
 import org.apache.ibatis.annotations.*;
 
 /**
@@ -36,4 +37,11 @@ public interface UserMapper {
             "values(#{openid},#{name},#{headImg},#{phone},#{sign},#{sex},#{city},#{createTime})")
     @Options(useGeneratedKeys=true, keyProperty="id", keyColumn="id")
     void saveUser(User user);
+
+    /**
+     * 更新用户到数据库
+     * @param user
+     */
+    @UpdateProvider(type = UserMapperDynaSQLCreater.class,method = "updateUser")
+    void updateUser(User user);
 }
