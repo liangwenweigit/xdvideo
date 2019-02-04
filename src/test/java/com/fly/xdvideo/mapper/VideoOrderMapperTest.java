@@ -34,31 +34,31 @@ public class VideoOrderMapperTest {
     }
 
     @Test
-    public void findOrderById() {
+    public void findOrderById() throws Exception {
         VideoOrder videoOrder = videoOrderMapper.findOrderById(1);
         System.out.println(videoOrder);
     }
 
     @Test
-    public void findOrderByOutTradeNo() {
+    public void findOrderByOutTradeNo() throws Exception {
         VideoOrder videoOrder = videoOrderMapper.findOrderByOutTradeNo("3432");
         System.out.println(videoOrder);
     }
 
     @Test
-    public void delOrder() {
+    public void delOrder() throws Exception {
         videoOrderMapper.delOrder(5,10);
     }
 
     @Test
-    public void findMyOrderList() {
+    public void findMyOrderList() throws Exception {
         List<VideoOrder> orderList = videoOrderMapper.findMyOrderList(1);
         for(VideoOrder videoOrder:orderList){System.out.println(videoOrder);}
 
     }
 
     @Test
-    public void updateOrderByOutTradeNo() {
+    public void updateOrderByOutTradeNo() throws Exception {
         VideoOrder videoOrder = new VideoOrder();
         videoOrder.setState(1);
         videoOrder.setNotifyTime(new Date());

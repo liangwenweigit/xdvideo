@@ -21,6 +21,8 @@ import java.util.*;
  */
 public class WXPayUtil {
 
+    private WXPayUtil(){}
+
     /**
      * XML格式字符串转换为Map
      *
@@ -65,11 +67,11 @@ public class WXPayUtil {
      */
     public static String mapToXml(Map<String, String> data) throws Exception {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder documentBuilder= documentBuilderFactory.newDocumentBuilder();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         org.w3c.dom.Document document = documentBuilder.newDocument();
         org.w3c.dom.Element root = document.createElement("xml");
         document.appendChild(root);
-        for (String key: data.keySet()) {
+        for (String key : data.keySet()) {
             String value = data.get(key);
             if (value == null) {
                 value = "";
@@ -90,8 +92,7 @@ public class WXPayUtil {
         String output = writer.getBuffer().toString(); //.replaceAll("\n|\r", "");
         try {
             writer.close();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
         }
         return output;
     }
@@ -99,21 +100,22 @@ public class WXPayUtil {
 
     /**
      * 生成微信支付sign
+     *
      * @return
      */
-    public static String createSign(SortedMap<String, String> params, String key){
+    public static String createSign(SortedMap<String, String> params, String key) {
         StringBuilder sb = new StringBuilder();
-        Set<Map.Entry<String, String>> es =  params.entrySet();
-        Iterator<Map.Entry<String,String>> it =  es.iterator();
+        Set<Map.Entry<String, String>> es = params.entrySet();
+        Iterator<Map.Entry<String, String>> it = es.iterator();
 
         //生成 stringA="appid=wxd930ea5d5a258f4f&body=test&device_info=1000&mch_id=10000100&nonce_str=ibuaiVcKdpRxkhJA";
-        while (it.hasNext()){
-            Map.Entry<String,String> entry = (Map.Entry<String,String>)it.next();
-             String k = (String)entry.getKey();
-             String v = (String)entry.getValue();
-             if(null != v && !"".equals(v) && !"sign".equals(k) && !"key".equals(k)){
-                sb.append(k+"="+v+"&");
-             }
+        while (it.hasNext()) {
+            Map.Entry<String, String> entry = (Map.Entry<String, String>) it.next();
+            String k = (String) entry.getKey();
+            String v = (String) entry.getValue();
+            if (null != v && !"".equals(v) && !"sign".equals(k) && !"key".equals(k)) {
+                sb.append(k + "=" + v + "&");
+            }
         }
 
         sb.append("key=").append(key);
@@ -124,40 +126,39 @@ public class WXPayUtil {
 
     /**
      * 校验签名
+     *
      * @param params
      * @param key
      * @return
      */
-    public static boolean isCorrectSign(SortedMap<String, String> params, String key){
-        String sign = createSign(params,key);
-
+    public static boolean checkSign(SortedMap<String, String> params, String key) {
+        String sign = createSign(params, key);
         String weixinPaySign = params.get("sign").toUpperCase();
-
         return weixinPaySign.equals(sign);
     }
 
 
     /**
-     * 获取有序map
+     * 获取有序map,因为微信回调后获取的map不是有序的，上面校验签名，需要的是有序的map
+     * 所以在校验前把map变成有序的map
+     *
      * @param map
      * @return
      */
-    public static SortedMap<String,String> getSortedMap(Map<String,String> map){
-
+    public static SortedMap<String, String> getSortedMap(Map<String, String> map) {
         SortedMap<String, String> sortedMap = new TreeMap<>();
-        Iterator<String> it =  map.keySet().iterator();
-        while (it.hasNext()){
-            String key  = (String)it.next();
+        Iterator<String> it = map.keySet().iterator();
+        while (it.hasNext()) {
+            String key = (String) it.next();
             String value = map.get(key);
             String temp = "";
-            if( null != value){
+            if (null != value) {
                 temp = value.trim();
             }
-            sortedMap.put(key,temp);
+            sortedMap.put(key, temp);
         }
         return sortedMap;
     }
-
 
 
 }

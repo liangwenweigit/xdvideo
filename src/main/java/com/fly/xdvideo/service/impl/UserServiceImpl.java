@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService{
     private UserMapper userMapper;
 
     @Override
-    public User saveWeChatUser(String code) {//静态方法获取属性
+    public User saveWeChatUser(String code) throws Exception {//静态方法获取属性
         String accessTokenUrl = String.format(WeChatConfig.getOpenAccessTokenUrl(),weChatConfig.getOpenAppid(),weChatConfig.getOpenAppsecret(),code);
 
         //获取access_token

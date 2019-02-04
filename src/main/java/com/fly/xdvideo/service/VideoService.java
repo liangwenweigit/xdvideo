@@ -12,13 +12,13 @@ import java.util.List;
  */
 public interface VideoService {
 
-    List<Video> selectAllVideo();
+    List<Video> selectAllVideo() throws Exception;
 
-    Video findVideoById(Integer id);
+    Video findVideoById(Integer id) throws Exception;
 
-    void updateVideo(Video video);
+    void updateVideo(Video video) throws Exception;
 
-    void deleteVideo(Integer id);
+    void deleteVideo(Integer id) throws Exception;
 
-    Video saveVideo(Video video);
+    Video saveVideo(Video video) throws Exception;
 }

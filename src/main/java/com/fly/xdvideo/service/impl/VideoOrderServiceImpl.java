@@ -9,12 +9,12 @@ import com.fly.xdvideo.mapper.VideoMapper;
 import com.fly.xdvideo.mapper.VideoOrderMapper;
 import com.fly.xdvideo.service.VideoOrderService;
 import com.fly.xdvideo.utils.CommonUtils;
+import com.fly.xdvideo.utils.HttpUtils;
 import com.fly.xdvideo.utils.WXPayUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.Date;
-import java.util.SortedMap;
-import java.util.TreeMap;
+
+import java.util.*;
 
 /**
  * 订单业务层实现类
@@ -36,8 +36,14 @@ public class VideoOrderServiceImpl implements VideoOrderService {
     @Autowired
     private WeChatConfig weChatConfig;
 
+    /**
+     * 下单 保存订单 未支付的
+     * @param videoOrderDto 参数包装类
+     * @return
+     * @throws Exception
+     */
     @Override
-    public VideoOrder saveOrder(VideoOrderDto videoOrderDto) throws Exception {
+    public String saveOrder(VideoOrderDto videoOrderDto) throws Exception {
       //查找商品信息
       Video video = videoMapper.findVideoById(videoOrderDto.getVideoId());
       //查询用户信息
@@ -63,14 +69,9 @@ public class VideoOrderServiceImpl implements VideoOrderService {
       videoOrder.setOutTradeNo(CommonUtils.getUUID());//流水号
       //把上面生成的订单 保存数据库
       videoOrderMapper.insert(videoOrder);
-      //调用下面抽取的统一下单方法
-      unifiedOrder(videoOrder);
-      //获取codeurl
-
-      //生成二维码
-
-
-        return null;
+      //调用下面抽取的统一下单方法,获取code_url
+        String code_url = unifiedOrder(videoOrder);
+        return code_url;
     }
 
     /**
@@ -108,13 +109,36 @@ public class VideoOrderServiceImpl implements VideoOrderService {
          <notify_url>http://xdclasstest.ngrok.xiaomiqiu.cn/api/wechat/user/callback</notify_url>
          <out_trade_no>AB6D58092E7B44E3BC8BCEF14509320B</out_trade_no>
          <sign>EF8A4A17A9C3D48DAC6D0258E584418B</sign>
-         <spbill_create_ip>0:0:0:0:0:0:0:1</spbill_create_ip>
+         <spbill_create_ip>192.168.1.2</spbill_create_ip>
          <total_fee>1000</total_fee>
          <trade_type>NATIVE</trade_type>
          </xml>
          */
-        //统一下单
+        //统一下单，调用httpUtils发送post请求
+        String orderStr = HttpUtils.doPost(WeChatConfig.getUnifiedOrderUrl(), payXml);
+        if (null == orderStr){return null;}//判断
+        //响应的结果也是xml，我们使用工具转成map
+        Map<String, String> unifiedOrderMap = WXPayUtil.xmlToMap(orderStr);
+        //测试打印
+        String temp =unifiedOrderMap.toString();
+        System.out.println(new String(temp.getBytes("ISO-8859-1"), "UTF-8"));
 
-      return null;
+        //拿到code_url
+        if (unifiedOrderMap!=null){
+            return unifiedOrderMap.get("code_url");
+        }
+        //否则return null
+        return null;
+    }
+
+
+    @Override
+    public VideoOrder findOrderByOutTradeNo(String outTradeNo) throws Exception {
+        return videoOrderMapper.findOrderByOutTradeNo(outTradeNo);
+    }
+
+    @Override
+    public int updateOrderByOutTradeNo(VideoOrder videoOrder) throws Exception {
+        return videoOrderMapper.updateOrderByOutTradeNo(videoOrder);
     }
 }

@@ -41,7 +41,7 @@ public class VideoController {
 	 */
 	@GetMapping("/page")
 	public Object pageVideo(@RequestParam(value = "page",defaultValue = "1")Integer page,
-							@RequestParam(value = "size",defaultValue = "10")Integer size){
+							@RequestParam(value = "size",defaultValue = "10")Integer size) throws Exception {
 	    //使用依赖内置对象
         PageHelper.startPage(page,size);
         //这里直接调用查询所有的sql即可，就是下面这个
@@ -71,7 +71,7 @@ public class VideoController {
 	 * http://localhost:8088/video/find_all
 	 */
 	@GetMapping("/find_all")
-	public Object findAll(){
+	public Object findAll() throws Exception {
 		return videoService.selectAllVideo();
 	}
 
@@ -82,7 +82,7 @@ public class VideoController {
 	 * http://localhost:8088/video/find_video?id=1
 	 */
 	@GetMapping("/find_video")                             //这个表示必须传这个参数,这个默认就是true
-	public Object findVideoById(@RequestParam(value = "id",required = true) Integer id){
+	public Object findVideoById(@RequestParam(value = "id",required = true) Integer id) throws Exception {
 		return videoService.findVideoById(id);
 	}
 

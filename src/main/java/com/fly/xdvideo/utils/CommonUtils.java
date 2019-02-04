@@ -11,30 +11,29 @@ import java.util.UUID;
 public class CommonUtils {
 
     private CommonUtils(){}
-    private static MessageDigest md5 = null;
-    static {
-        try {
-            md5 = MessageDigest.getInstance("MD5");
-        } catch (Exception e) {
-        }
-    }
 
     /**
      *普通MD5加密，只能加密一次。要和微信的一样，因为微信回调也是加密一次
-     * @param str
+     * 这个适用于微信的
+     * @param
      * @return
      */
-    public static String getMd5(String str) {
-        byte[] bs = md5.digest(str.getBytes());
-        StringBuilder sb = new StringBuilder(40);
-        for (byte x : bs) {
-            if ((x & 0xff) >> 4 == 0) {
-                sb.append("0").append(Integer.toHexString(x & 0xff));
-            } else {
-                sb.append(Integer.toHexString(x & 0xff));
+    public static String getMd5(String data) {
+        try {
+
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            byte [] array = md5.digest(data.getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte item : array) {
+                sb.append(Integer.toHexString((item & 0xFF) | 0x100).substring(1, 3));
             }
+            return sb.toString().toUpperCase();
+
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        return sb.toString().toUpperCase();
+        return null;
+
     }
 
     /**

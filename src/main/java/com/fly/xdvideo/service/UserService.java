@@ -9,5 +9,5 @@ import com.fly.xdvideo.domain.User;
  */
 public interface UserService {
 
-    User saveWeChatUser(String code);
+    User saveWeChatUser(String code) throws Exception;
 }

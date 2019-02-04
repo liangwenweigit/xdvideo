@@ -23,7 +23,7 @@ public class VideoServiceTest {
     private VideoService videoService;
 
     @Test
-    public void selectAllVideo() {
+    public void selectAllVideo() throws Exception {
         List<Video> videos = videoService.selectAllVideo();
         //断言
         assertNotNull(videos);
@@ -34,7 +34,7 @@ public class VideoServiceTest {
     }
 
     @Test
-    public void findVideoById() {
+    public void findVideoById() throws Exception {
         Video video = videoService.findVideoById(1);
         //断言
         assertNotNull(video);
@@ -42,7 +42,7 @@ public class VideoServiceTest {
     }
 
     @Test
-    public void updateVideo() {
+    public void updateVideo() throws Exception {
         Video video = new Video();
         video.setSummary("单元测试修改概要");
         video.setId(1);
@@ -50,12 +50,12 @@ public class VideoServiceTest {
     }
 
     @Test
-    public void deleteVideo() {
+    public void deleteVideo() throws Exception {
         videoService.deleteVideo(12);
     }
 
     @Test
-    public void saveVideo() {
+    public void saveVideo() throws Exception {
         Video video = new Video();
         video.setTitle("单元测试");
         videoService.saveVideo(video);

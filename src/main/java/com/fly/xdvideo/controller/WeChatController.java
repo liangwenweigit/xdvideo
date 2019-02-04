@@ -3,18 +3,22 @@ package com.fly.xdvideo.controller;
 import com.fly.xdvideo.config.WeChatConfig;
 import com.fly.xdvideo.domain.JsonData;
 import com.fly.xdvideo.domain.User;
+import com.fly.xdvideo.domain.VideoOrder;
 import com.fly.xdvideo.service.UserService;
+import com.fly.xdvideo.service.VideoOrderService;
 import com.fly.xdvideo.utils.JwtUtils;
-import org.hibernate.validator.internal.metadata.aggregated.rule.ReturnValueMayOnlyBeMarkedOnceAsCascadedPerHierarchyLine;
+import com.fly.xdvideo.utils.WXPayUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.util.Base64;
+import java.util.Date;
+import java.util.Map;
+import java.util.SortedMap;
 
 /**
  * @author liang
@@ -34,6 +38,12 @@ public class WeChatController {
      */
     @Autowired
     private UserService userService;
+
+    /**
+     * 订单业务层对象注入
+     */
+    @Autowired
+    private VideoOrderService videoOrderService;
 
     /**
      * 拼装微信扫一扫登录url
@@ -64,7 +74,7 @@ public class WeChatController {
      * @return
      */
     @GetMapping("/user/callback")
-    public void back(@RequestParam("code") String code, String state, HttpServletResponse response) throws IOException {
+    public void back(@RequestParam("code") String code, String state, HttpServletResponse response) throws Exception {
 //System.out.println(code);//0213N2QL1pknb71vFIPL1sPGPL13N2Qw
 //System.out.println(state);//http://www.flyx5.com
         User user = userService.saveWeChatUser(code);
@@ -84,4 +94,69 @@ public class WeChatController {
         //为空就转到主页
         response.sendRedirect(code);
     }
+
+
+    /**
+     * 微信支付后的回调方法
+     */
+    @RequestMapping("/wxpay/back")
+    public void wxpayCallback(HttpServletRequest request,HttpServletResponse response) throws Exception {
+
+        InputStream inputStream = request.getInputStream();
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream,"UTF-8"));
+        StringBuilder sb = new StringBuilder();
+        String line = "";
+        while ((line = br.readLine())!=null){
+            sb.append(line);
+        }
+        //关闭流
+        br.close();
+        inputStream.close();
+        //把微信回调传过来的xml数据 转成map数据
+        Map<String, String> map = WXPayUtil.xmlToMap(sb.toString());
+        //测试输出（成功）
+        System.out.println(map.toString());
+        /**
+         * {nonce_str=P7n3TgLjtiBXTMiF, code_url=weixin://wxpay/bizpayurl?pr=9tSyWGx, appid=wx5beac15ca207c40c,
+         * sign=ECC209CE3E9842084A3BF638254F9F67, trade_type=NATIVE,
+         * return_msg=OK, result_code=SUCCESS, mch_id=1503809911, return_code=SUCCESS,
+         * prepay_id=wx042025375238476a966d026a3235846780}
+         */
+        //把获取的map转换成有序的map
+        SortedMap<String, String> sortedMap = WXPayUtil.getSortedMap(map);
+        //判断签名是否正确,true为正确
+        if (WXPayUtil.checkSign(sortedMap,weChatConfig.getKey())){
+            //也成功
+            System.out.println("输出表示验证sign成功,和回调的一样");
+            //判断微信状态码,表示商户接收通知成功并校验成功
+            if ("SUCCESS".equals(sortedMap.get("result_code"))){
+                //更新订单状态,根据流水号查询订单，之后修改订单状态
+                String outTradeNo = sortedMap.get("out_trade_no");
+                VideoOrder dbVideoOrder = videoOrderService.findOrderByOutTradeNo(outTradeNo);
+                //判断订单是0才支付，才加积分，判断逻辑看业务场景
+                if(dbVideoOrder != null && dbVideoOrder.getState()==0){
+                    VideoOrder videoOrder = new VideoOrder();
+                    videoOrder.setState(1);//设置为支付状态
+                    videoOrder.setNotifyTime(new Date());//设置通知时间
+                    videoOrder.setOutTradeNo(outTradeNo);
+                    //更新状态 和 通知时间
+                    int row = videoOrderService.updateOrderByOutTradeNo(videoOrder);
+                    //判断影响行数row==1,响应微信成功或者失败。回应微信，SUCCESS 或者 FAIL
+                    if (row == 1){
+                        response.setContentType("text/xml");
+                        response.getWriter().println("SUCCESS");
+                        response.getWriter().flush();
+                        response.getWriter().close();
+                        return;
+                    }
+                }
+            }
+        }
+        //这里是都处理失败
+        response.setContentType("text/xml");
+        response.getWriter().println("FAIL");
+        response.getWriter().flush();
+        response.getWriter().close();
+    }
+
 }

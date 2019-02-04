@@ -21,27 +21,27 @@ public class VideoServiceImpl implements VideoService {
     private VideoMapper videoMapper;
 
     @Override
-    public List<Video> selectAllVideo() {
+    public List<Video> selectAllVideo()throws Exception{
         return videoMapper.selectAllVideo();
     }
 
     @Override
-    public Video findVideoById(Integer id) {
+    public Video findVideoById(Integer id)throws Exception {
         return videoMapper.findVideoById(id);
     }
 
     @Override
-    public void updateVideo(Video video) {
+    public void updateVideo(Video video) throws Exception {
         videoMapper.updateVideo(video);
     }
 
     @Override
-    public void deleteVideo(Integer id) {
+    public void deleteVideo(Integer id)  throws Exception{
         videoMapper.deleteVideo(id);
     }
 
     @Override
-    public Video saveVideo(Video video) {
+    public Video saveVideo(Video video) throws Exception {
         videoMapper.saveVideo(video);
         return video;
     }

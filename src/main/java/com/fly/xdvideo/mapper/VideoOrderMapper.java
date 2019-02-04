@@ -33,15 +33,9 @@ public interface VideoOrderMapper {
      * @return
      */
     @Select("select * from video_order where id = #{id} and del = 0")
-    VideoOrder findOrderById(@Param("id") Integer id);
+    VideoOrder findOrderById(@Param("id") Integer id) throws Exception;
 
-    /**
-     *根据交易号获取订单
-     * @param
-     * @return
-     */
-    @Select("select * from video_order where out_trade_no = #{out_trade_no} and del = 0")
-    VideoOrder findOrderByOutTradeNo(@Param("out_trade_no") String outTradeNo);
+
 
     /**
      * 根据订单id+userId删除订单（把del改成1）
@@ -50,7 +44,7 @@ public interface VideoOrderMapper {
      * @param userId
      */
     @Update("update video_order set del = 1 where id = #{id} and user_id = #{userId}")
-    void delOrder(@Param("id") Integer id,@Param("userId") Integer userId);
+    void delOrder(@Param("id") Integer id,@Param("userId") Integer userId) throws Exception;
 
     /**
      * 根据用户id查询某个用户的所有订单
@@ -58,7 +52,7 @@ public interface VideoOrderMapper {
      * @return
      */
     @Select("select * from video_order where user_id = #{userId} and del = 0")
-    List<VideoOrder> findMyOrderList(Integer userId);
+    List<VideoOrder> findMyOrderList(Integer userId) throws Exception;
 
     /**
      * 根据订单交易号修改订单支付状态
@@ -66,5 +60,13 @@ public interface VideoOrderMapper {
      * @param videoOrder
      */
     @Update({"update video_order set state = #{state} , notify_time = #{notifyTime} where out_trade_no = #{outTradeNo} and del = 0 and state = 0" })
-    void updateOrderByOutTradeNo(VideoOrder videoOrder);
+    int updateOrderByOutTradeNo(VideoOrder videoOrder) throws Exception;
+
+    /**
+     *根据交易号查询订单
+     * @param
+     * @return
+     */
+    @Select("select * from video_order where out_trade_no = #{out_trade_no} and del = 0")
+    VideoOrder findOrderByOutTradeNo(@Param("out_trade_no") String outTradeNo) throws Exception;
 }

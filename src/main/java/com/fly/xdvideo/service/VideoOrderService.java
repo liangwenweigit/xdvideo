@@ -2,6 +2,7 @@ package com.fly.xdvideo.service;
 
 import com.fly.xdvideo.domain.VideoOrder;
 import com.fly.xdvideo.dto.VideoOrderDto;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 订单业务层接口
@@ -26,6 +27,23 @@ public interface VideoOrderService {
      * @param videoOrderDto 参数包装类
      * @return
      */
-    VideoOrder saveOrder(VideoOrderDto videoOrderDto) throws Exception;
+    String saveOrder(VideoOrderDto videoOrderDto) throws Exception;
+
+    /**
+     *根据订单交易号查询订单
+     * @param outTradeNo
+     * @return
+     * @throws Exception
+     */
+    VideoOrder findOrderByOutTradeNo(String outTradeNo) throws Exception;
+
+    /**
+     * 根据订单交易号修改订单支付状态
+     * 状态：0表示未支付 1表示已支付
+     * @param videoOrder
+     * @return
+     * @throws Exception
+     */
+    int updateOrderByOutTradeNo(VideoOrder videoOrder) throws Exception;
 
 }
