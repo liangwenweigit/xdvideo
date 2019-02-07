@@ -39,14 +39,14 @@ public class LoginInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        //首先先拿到tocken,tocken有可能放在请求头，也有可能是一个token参数
-        String tocken = request.getHeader("tocken");//获取请求头的看看有没有tocken
-        if (tocken==null){
-            tocken = request.getParameter("tocken");//在获取参数里面的tocken看看有没有
+        //首先先拿到token,tken有可能放在请求头，也有可能是一个token参数
+        String token = request.getHeader("token");//获取请求头的看看有没有token
+        if (token==null){
+            token = request.getParameter("token");//在获取参数里面的token看看有没有
         }
 
-        if (tocken !=null){
-            Claims claims =  JwtUtils.checkTocken(tocken);
+        if (token !=null){
+            Claims claims =  JwtUtils.checkTocken(token);
             if(claims !=null){
                 Integer userId = (Integer)claims.get("id");
                 String name = (String) claims.get("name");
@@ -73,13 +73,12 @@ public class LoginInterceptor implements HandlerInterceptor {
      * @param response
      * @param obj
      */
-    public static void sendJsonMessage(HttpServletResponse response, Object obj) throws IOException {
+    public static void sendJsonMessage(HttpServletResponse response, Object obj) throws Exception {
 
         response.setContentType("application/json; charset=utf-8");
         PrintWriter writer = response.getWriter();
         writer.print(gson.toJson(obj));
+        writer.flush();
         writer.close();
-        response.flushBuffer();
-
     }
 }

@@ -13,6 +13,8 @@ import com.fly.xdvideo.utils.HttpUtils;
 import com.fly.xdvideo.utils.WXPayUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -43,6 +45,7 @@ public class VideoOrderServiceImpl implements VideoOrderService {
      * @throws Exception
      */
     @Override
+    @Transactional(propagation = Propagation.REQUIRED,readOnly = false)//读写型
     public String saveOrder(VideoOrderDto videoOrderDto) throws Exception {
       //查找商品信息
       Video video = videoMapper.findVideoById(videoOrderDto.getVideoId());
@@ -70,6 +73,10 @@ public class VideoOrderServiceImpl implements VideoOrderService {
       //把上面生成的订单 保存数据库
       videoOrderMapper.insert(videoOrder);
       //调用下面抽取的统一下单方法,获取code_url
+
+        //抛异常 测试事务 测试成功
+        //int temp = 5/0;
+
         String code_url = unifiedOrder(videoOrder);
         return code_url;
     }
@@ -82,14 +89,14 @@ public class VideoOrderServiceImpl implements VideoOrderService {
         //生成签名，生成签名的参数看这里，是的是必须的，否的可以不传
         //https://pay.weixin.qq.com/wiki/doc/api/native.php?chapter=9_1
         SortedMap<String,String> params = new TreeMap<>();
-        params.put("appid",weChatConfig.getAppId());//公众号appid
-        params.put("mch_id",weChatConfig.getMer_id());//商户号
+        params.put("appid",weChatConfig.getAppId().trim());//公众号appid
+        params.put("mch_id",weChatConfig.getMer_id().trim());//商户号
         params.put("nonce_str",CommonUtils.getUUID());//随机32位字符串uuid即可
-        params.put("body",videoOrder.getVideoTitle());//例如：腾讯充值中心-QQ会员充值
-        params.put("out_trade_no",videoOrder.getOutTradeNo());//订单流水号/订单号
-        params.put("total_fee",videoOrder.getTotalFee().toString());//订单价格，单位为：分
+        params.put("body",videoOrder.getVideoTitle().trim());//例如：腾讯充值中心-QQ会员充值
+        params.put("out_trade_no",videoOrder.getOutTradeNo().trim());//订单流水号/订单号
+        params.put("total_fee",videoOrder.getTotalFee().toString().trim());//订单价格，单位为：分
         params.put("spbill_create_ip",videoOrder.getIp());//下单ip
-        params.put("notify_url",weChatConfig.getCallback());//微信回调地址
+        params.put("notify_url",weChatConfig.getCallback().trim());//微信回调地址
         params.put("trade_type","NATIVE");//交易类型
         //使用工具类
         String sign = WXPayUtil.createSign(params,weChatConfig.getKey());

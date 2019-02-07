@@ -10,6 +10,8 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +34,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/user/api/order")
 public class OrderController {
+
+    //这个是命中info文件的
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    //这个是命中data数据统计的,参数必须是配置文件里面配置一样的的
+    private Logger dataLogger = LoggerFactory.getLogger("dataLogger");
 
     @Autowired
     private VideoOrderService videoOrderService;
@@ -52,20 +60,28 @@ public class OrderController {
 
     /**
      * 必须是get方式 访问：http://localhost:8088/user/api/order/save_order?video_id=1
-     * 用户下单，后面新写的
-     *
+     * 用户下单，写出付款二维码到客户端
+     * 因为是获取图片 所以是get方式
      * @return
      */
     @GetMapping("/save_order")
     public void saveOrder(@RequestParam("video_id") Integer video_id, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        //获取用下单户IP，使用
-        //String ip = IpUtils.getIpAddr(request);
-        //测试的时候不能用本地IP，直接写死一个在这里先
-        String ip = "192.154.2.32";
 
-        //从request域中获取是谁下的单，一般这个在用户登录的时候就会设置进去
+        System.out.println("用户下单");
+        //获取用下单户IP，使用
+        String ip = IpUtils.getIpAddr(request);
+        //测试的时候不能用本地IP，直接写死一个在这里先
+        //String ip = "192.168.1.2";
+
+        //从request中获取用户id，因为在拦截器拦截的时候 把id设置进去了
+        Integer user_id = (Integer) request.getAttribute("user_id");
+
         //我们这里直接写一个固定数据，这个id必须是数据库有的
-        Integer user_id = 26;
+        //Integer user_id = 26;
+
+        //日志统计数据(后面都是自定义的数据) 后面大括号的参数就是 后面的参数(多参数就按顺序写就OK，注意有大括号)
+        dataLogger.info("module=OrderController api=save_order user_id={} video_id={}",user_id,video_id);
+
         VideoOrderDto videoOrderDto = new VideoOrderDto();
         //下面这俩在下面生成订单的时候再处理
         //videoOrderDto.setDel(0);//0表示未删除

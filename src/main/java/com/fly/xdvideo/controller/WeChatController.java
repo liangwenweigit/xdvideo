@@ -11,6 +11,8 @@ import com.fly.xdvideo.utils.WXPayUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -46,11 +48,27 @@ public class WeChatController {
     private VideoOrderService videoOrderService;
 
     /**
-     * 拼装微信扫一扫登录url
+     * 拼装获取微信扫一扫登录url
      * @return
      * access_page参数：是当前所在页面，传过去，就是登陆后返回当前页面,要+http://
      * http://localhost:8088/api/wechat/login_url?access_page=http://www.flyx5.com
+     * 当前页url获取
+    //获取微信登录地址
+    function get_wechat_login(){
+    //获取当前页面 作为参数传送过去
+    var current_page = window.location.href;
+    $.ajax({
+    type: 'get',
+    url: host+"/api/wechat/login_url?access_page="+current_page,
+    dataType: 'json',
+    success: function(res){
+    var data = res.data;
+    $("#login").attr("href",data);
+    }})
+    }
+
      * 返回的json串 就获取url(data)
+     * 拼装获取微信扫一扫登录url
      */
     @GetMapping("/login_url")
     @ResponseBody
@@ -74,27 +92,34 @@ public class WeChatController {
      * @return
      */
     @GetMapping("/user/callback")
-    public void back(@RequestParam("code") String code, String state, HttpServletResponse response) throws Exception {
+    public void back(@RequestParam("code") String code, String state,HttpServletRequest request, HttpServletResponse response) throws Exception {
 //System.out.println(code);//0213N2QL1pknb71vFIPL1sPGPL13N2Qw
 //System.out.println(state);//http://www.flyx5.com
+        String newState = "";
+        //处理传过来的url,比如这样的：http://192.168.1.2:8081/web/index.html?__hbt=1549515787884
+        //把问号后面的都去掉
+        if(state.contains("?")){//判断是否包含有问号
+            //获取？号的下角标，然后截取url
+            int index = state.indexOf("?");
+            newState = state.substring(0,index);
+        }
         User user = userService.saveWeChatUser(code);
+
         //判断
         if(user != null){
             //生成jwt
             String token = JwtUtils.createJsonWebToken(user);
             // state 当前用户的页面地址，需要拼接 http://  这样才不会站内跳转,但是传来的数据有http就不用加
             //这里url转码，name第一次是Base64解码，然后有中文，再转成url编码
-            String url = state+"?token="+token+"&head_img="+user.getHeadImg()+"&name="+
-                    URLEncoder.encode( new String(Base64.getDecoder().decode(user.getName().getBytes()), "UTF-8"),"UTF-8");
-         System.out.println(url);
-
+           String url = newState+"?token="+token+"&head_img="+user.getHeadImg()+"&name="+
+                   URLEncoder.encode( new String(Base64.getDecoder().decode(user.getName().getBytes()), "UTF-8"),"UTF-8");
+           System.out.println(url);
             response.sendRedirect(url);
             return;//一定要retun
         }
-        //为空就转到主页
-        response.sendRedirect(code);
+        //为空就转到原来的页面,不带参数
+        response.sendRedirect(state);
     }
-
 
     /**
      * 微信支付后的回调方法

@@ -44,6 +44,7 @@ public class VideoController {
 							@RequestParam(value = "size",defaultValue = "10")Integer size) throws Exception {
 	    //使用依赖内置对象
         PageHelper.startPage(page,size);
+
         //这里直接调用查询所有的sql即可，就是下面这个
         //    @Select("select * from video")
         //    List<Video> selectAllVideo();

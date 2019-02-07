@@ -5,12 +5,20 @@ import com.fly.xdvideo.domain.User;
 import com.fly.xdvideo.mapper.UserMapper;
 import com.fly.xdvideo.service.UserService;
 import com.fly.xdvideo.utils.HttpUtils;
+import org.springframework.aop.Advisor;
+import org.springframework.aop.aspectj.AspectJExpressionPointcut;
+import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.interceptor.*;
+
 import java.io.UnsupportedEncodingException;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
+
 /**
  * 用户业务层实现类
  * @author liang
@@ -166,3 +174,5 @@ System.out.println("===========用户第一次访问===========保存数据库")
      unionid	用户统一标识。针对一个微信开放平台帐号下的应用，同一用户的unionid是唯一的。
      */
 }
+
+
