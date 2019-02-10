@@ -69,7 +69,7 @@ public class VideoOrderServiceImpl implements VideoOrderService {
       videoOrder.setNickname(user.getName());//切记这个名字是base64位的
 
       videoOrder.setIp(videoOrderDto.getIp());//下单用户ip
-      videoOrder.setOutTradeNo(CommonUtils.getUUID());//流水号
+      videoOrder.setOutTradeNo(videoOrderDto.getOutTradeNo());//流水号,这个在controller上面就设置并且设置进去session里面了
       //把上面生成的订单 保存数据库
       videoOrderMapper.insert(videoOrder);
       //调用下面抽取的统一下单方法,获取code_url

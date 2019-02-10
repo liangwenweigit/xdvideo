@@ -1,8 +1,10 @@
 package com.fly.xdvideo.controller;
 
 import com.fly.xdvideo.domain.JsonData;
+import com.fly.xdvideo.domain.VideoOrder;
 import com.fly.xdvideo.dto.VideoOrderDto;
 import com.fly.xdvideo.service.VideoOrderService;
+import com.fly.xdvideo.utils.CommonUtils;
 import com.fly.xdvideo.utils.IpUtils;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -10,6 +12,7 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import com.sun.javafx.collections.MappingChange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,15 +63,15 @@ public class OrderController {
     //}
 
     /**
-     * 必须是get方式 访问：http://localhost:8088/user/api/order/save_order?video_id=1
+     * 必须是get方式 访问：http://localhost:8088/user/api/order/save_order?video_id=1&uuid=xxx
      * 用户下单，写出付款二维码到客户端
      * 因为是获取图片 所以是get方式
      * @return
      */
     @GetMapping("/save_order")
-    public void saveOrder(@RequestParam("video_id") Integer video_id, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void saveOrder(@RequestParam("video_id") Integer video_id,@RequestParam("orderuuid")String orderuuid,HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        System.out.println("用户下单");
+        System.out.println("用户下单"+orderuuid+","+video_id);
         //获取用下单户IP，使用
         String ip = IpUtils.getIpAddr(request);
         //测试的时候不能用本地IP，直接写死一个在这里先
@@ -89,6 +93,11 @@ public class OrderController {
         videoOrderDto.setUserId(user_id);//用户id
         videoOrderDto.setVideoId(video_id);//订单项视频id
         videoOrderDto.setIp(ip);//下单客户IP地址
+        videoOrderDto.setOutTradeNo(orderuuid);//流水号
+
+        //把流水号存进去session 方便后面轮询订单状态
+        request.getSession().setAttribute("out_trade_no",videoOrderDto.getOutTradeNo());
+
         String code_url = videoOrderService.saveOrder(videoOrderDto);
 
         if (code_url == null) {
@@ -102,10 +111,31 @@ public class OrderController {
         hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
         BitMatrix bitMatrix = new MultiFormatWriter().encode(code_url, BarcodeFormat.QR_CODE, 400, 400, hints);
         OutputStream out = response.getOutputStream();
+
+
         //把二维码写出客户端
         MatrixToImageWriter.writeToStream(bitMatrix, "png", out);
         //后面用户支付之后就是回调地址，回调地址的controller路径写在WeChatController里面
 
     }
+
+
+    /**
+     *轮询订单状态 根据订单流水号
+     * @return
+     */
+    @GetMapping("/select_order")
+    public JsonData selectOrderStatu(@RequestParam("out_trade_no") String out_trade_no) throws Exception {
+        VideoOrder videoOrder = videoOrderService.findOrderByOutTradeNo(out_trade_no);
+        System.out.println(videoOrder);
+        if (videoOrder==null){
+            return JsonData.buildError("订单不存在");
+        }
+        if (videoOrder.getState()==1){//支付成功
+            return JsonData.buildSuccess();
+        }
+        return JsonData.buildError("订单未支付");
+    }
+
 
 }

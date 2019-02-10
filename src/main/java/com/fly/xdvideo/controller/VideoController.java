@@ -1,9 +1,12 @@
 package com.fly.xdvideo.controller;
 
+import com.fly.xdvideo.domain.JsonData;
 import com.fly.xdvideo.domain.Video;
 import com.fly.xdvideo.service.VideoService;
+import com.fly.xdvideo.utils.CommonUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.sun.javafx.collections.MappingChange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -85,6 +88,20 @@ public class VideoController {
 	@GetMapping("/find_video")                             //这个表示必须传这个参数,这个默认就是true
 	public Object findVideoById(@RequestParam(value = "id",required = true) Integer id) throws Exception {
 		return videoService.findVideoById(id);
+	}
+
+	/**
+	 * 根据id查询视频 并且返回一个订单号
+	 * @param
+	 * @return
+	 * http://localhost:8088/video/find_video?vidro_id=1
+	 */
+	@GetMapping("/find_video_uuid")                             //这个表示必须传这个参数,这个默认就是true
+	public JsonData findVideoByIdAndUUID(@RequestParam(value = "video_id",required = true) Integer video_id) throws Exception {
+		Map<String,Object> data = new HashMap<>(0);
+		data.put("orderuuid", CommonUtils.getUUID());
+		data.put("video",videoService.findVideoById(video_id));
+		return JsonData.buildSuccess(data);
 	}
 
 

@@ -2,7 +2,7 @@
 <configuration>
 
     <!-- 定义日志的根目录 D:\app\log,就在当前项目磁盘的根路径下创建 -->
-    <property name="LOG_HOME" value="/app/log" />
+    <property name="LOG_HOME" value="/log" />
 
     <!-- 定义日志文件名称 可以自定义,就是前缀，一般用项目名-->
     <property name="appName" value="xdvideo"></property>
