@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -22,7 +23,7 @@ public class XdExceptionHandler {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     @ExceptionHandler(value = Exception.class)//这里表示拦截全部异常
     @ResponseBody
-    public JsonData handler(Exception e){
+    public JsonData handler(Exception e,HttpServletRequest request){
         if (e instanceof XdException){
             XdException xdException = (XdException) e;
             return JsonData.buildError(xdException.getMsg(),xdException.getCode());
@@ -53,7 +54,9 @@ public class XdExceptionHandler {
             }
         }
         //异常打印到自己的日志  提示错误一样可以用的
-        logger.error(sw.toString());
+        //异常打印到自己的日志  提示错误一样可以用的
+        logger.error(sw.toString());//打印错误的信息
+        logger.error(request.getRequestURL().toString());//打印出错误的url
 
         //并且发送异常信息给前端
         return JsonData.buildError("服务器正在维护，请稍后访问!");
